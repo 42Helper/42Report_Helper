@@ -1,6 +1,6 @@
 const { WebClient, LogLevel } = require("@slack/web-api");
 
-const BOT_TOKEN = "xoxb-1687600702885-1775740415442-tK85PT2ws0K7XQaK8m896Si9";
+const BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 
 const client = new WebClient(BOT_TOKEN, {
     logLevel: LogLevel.DEBUG, // api를 통해 데이터가 불러오는 로그를 출력해줌
