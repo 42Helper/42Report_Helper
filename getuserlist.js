@@ -9,7 +9,7 @@ const client = new WebClient(BOT_TOKEN, {
 const start = async () => {
     try {
         const result = await client.users.list();
-        var data = {
+        let data = {
             usersIdList: [], //유저 id 담긴 배열 -> 객체 접근할 때 사용하기 위해
             usersStore: {}, //유저 정보 담긴 객체
         };
@@ -23,9 +23,9 @@ const start = async () => {
 
 const saveUsers = (users, data) => {
     users.forEach((user) => {
-        var id = user.id;
-        var name = user.name;
-        var isEmail = user.is_email_confirmed;
+        let id = user.id;
+        let name = user.name;
+        let isEmail = user.is_email_confirmed;
         //유저는 이메일인증 true, 봇은 이메일인증 false이므로 유저만 추출하기 위해 사용함
 
         if (isEmail) {
