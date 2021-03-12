@@ -1,7 +1,7 @@
 const mysql = require("mysql");
-const root = require("./db/dbrootInfo.js");
+const root = require("../db/dbrootInfo.js");
 
-const saveDB = (user_id, intra_id) => {
+const addUser = (user_id, intra_id) => {
     let connection = mysql.createConnection(root); //root = {host, user, password, database}
     connection.connect();
     connection.query(
@@ -17,4 +17,4 @@ const saveDB = (user_id, intra_id) => {
     connection.end();
 };
 
-module.exports = saveDB;
+module.exports = addUser;
