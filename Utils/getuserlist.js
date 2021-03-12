@@ -27,7 +27,7 @@ const saveUsers = (users, data) => {
         let isEmail = user.is_email_confirmed;
         //유저는 이메일인증 true, 봇은 이메일인증 false이므로 유저만 추출하기 위해 사용함
 
-        if (isEmail) {
+        if (isEmail && name === 'hjung') {
             //유저: 이메일 인증, 봇: 이메일 인증X
             data.usersIdList.push(id);
             data.usersStore[id] = { id, name }; //필요한 유저정보를 추가하면됨. 일단 id, name만 추가해놓음
