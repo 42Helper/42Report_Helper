@@ -1,19 +1,24 @@
 const usersDataFunc = require("./Utils/getuserlist.js"); //getuserlist.js에서 start 함수 받아옴
 const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
+const addReportLog = require('./Report/Report.js');
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
 
 const app = new App({ signingSecret, token });
 
-app.action("action_yes", async ({ body, ack }) => {
+app.action("action_yes", async ({ body, ack, say }) => {
     await ack();
     console.log(body.user.id);
+    say('good!!!!');
+    /*
     const result = await app.client.chat.postMessage({
         token, //process.env.SLACK_BOT_TOKEN,
         channel: body.user.id,
         text: "good!",
     });
+    */
+    addReportLog(body.user.id);
 });
 
 app.action("action_no", async ({ body, ack }) => {
