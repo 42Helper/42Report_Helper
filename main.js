@@ -34,6 +34,8 @@ app.action("action_no", async ({ body, ack }) => {
 const mysql = require("mysql");
 const root = require("./db/dbrootInfo.js");
 const addUser = require("./User/saveDB.js");
+const connection = mysql.createConnection(root);
+connection.connect();
 
 app.message("!join", async ({ body, say }) => {
     if (body.challenge && body.type == "url_verification") {
@@ -46,10 +48,8 @@ app.message("!join", async ({ body, say }) => {
             let usersStore = usersData.usersStore;
             let user_id = body.event.user;
             let intra_id = usersStore[user_id].name;
-            let connection = mysql.createConnection(root); //root = {host, user, password, database}
 
             //user테이블에 해당 유저 데이터가 있는지 조회 후 처리
-            connection.connect();
             connection.query(
                 `SELECT * FROM user WHERE user_id = "${user_id}"`,
                 (error, results, fields) => {
@@ -70,9 +70,38 @@ app.message("!join", async ({ body, say }) => {
                     }
                 }
             );
-            connection.end();
         }
     } catch (error) {
+        console.error(error);
+    }
+});
+
+app.message("!delete", async( {body, say}) => {
+    try {
+        let user_id = body.event.user;
+        
+        console.log(body.event.user);
+        connection.query(`SELECT * FROM user WHERE user_id = "${user_id}"`, 
+        (error, results, fields) => {
+            if (error)
+                console.error(error);
+            else {
+                if (results[0] != undefined)
+                {
+                    connection.query(`DELETE FROM user WHERE user_id = "${user_id}"`,
+                    (error, results, fileds) => {
+                        if (error)
+                            console.error(error);
+                        else
+                            say(`<@${user_id}> 삭제 완료!`);
+                    });
+                }
+                else {
+                    say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
+                }
+            }
+        });
+    } catch(error) {
         console.error(error);
     }
 });
