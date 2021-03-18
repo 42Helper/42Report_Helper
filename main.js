@@ -234,9 +234,36 @@ app.message("!push state", async ({ body, say }) => {
     }
 });
 
+app.message("!help", async({body, say}) => {
+    try {
+        await say({
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "`!join`\n: 구독 시작\n`!delete`\n: 구독 취소"
+                    }
+                },{
+                    "type": "divider"
+                },{
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 마감일 알림만 받기\n`!push off`\n: 모든 알림 끄기\n`!push state`\n: 알림 상태 확인"
+                    }
+                }
+            ]
+        }); 
+    } catch(error) {
+        console.error(error);
+    }
+});
+
 (async () => {
     await app.start(process.env.PORT || 3000);
     //schedule.scheduleJob('37 15 * * *', function(){
-    //sendMsg();
+    sendMsg.sundayMsg();
+    sendMsg.dailyMsg();
     //});
 })();
