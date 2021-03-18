@@ -1,69 +1,108 @@
-const usersDataFunc = require("./getuserlist.js"); //getuserlist.js에서 start 함수 받아옴
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("../db/token.js"); //module.exports = {signingSecret, token}
+const getuser = require("../User/getuserdata.js");
 
 const app = new App({ signingSecret, token });
 
-let sendMsg = async () => {
-    let usersData = await usersDataFunc();
+let dailyMsg = async () => {
+    const userdata = await getuser();
+    
+    if (userdata === undefined)
+        console.log("유저 데이터 가져오기 실패");
+    else {
+        let i;
 
-    if (usersData != undefined) {
-        //유저정보가 성공적으로 저장되어 있으면 실행
-        let usersIdList = usersData.usersIdList;
-        let usersStore = usersData.usersStore;
-
-        /*아래 forEach 부분을 스케줄링 함수 안에 넣어야할 것같아요*/
-        usersIdList.forEach((user) => {
-            console.log(usersStore[user]);
-            /*이 부분에 메세지 전송이 있으면 됩니다.*/
+        for (i = 0; i < userdata.length; i++)
+        {
             (async () => {
                 try {
-                    const result = await app.client.chat.postMessage({
-                        token, //process.env.SLACK_BOT_TOKEN,
-                        channel: user,
-                        blocks: [
-                            {
-                                type: "section",
-                                text: {
-                                    type: "plain_text",
-                                    text: "오늘 보고서 작성하셨나요?",
-                                    emoji: true,
+                    if (userdata[i].on_off == 1)
+                    {
+                        const result = await app.client.chat.postMessage({
+                            token, 
+                            channel: userdata[i].user_id,
+                            blocks: [
+                                {
+                                    type: "section",
+                                    text: {
+                                        type: "plain_text",
+                                        text: "오늘 보고서 작성하셨나요?",
+                                        emoji: true,
+                                    },
                                 },
-                            },
-                            {
-                                type: "actions",
-                                elements: [
-                                    {
-                                        type: "button",
-                                        text: {
-                                            type: "plain_text",
-                                            text: "네",
-                                            emoji: true,
+                                {
+                                    type: "actions",
+                                    elements: [
+                                        {
+                                            type: "button",
+                                            text: {
+                                                type: "plain_text",
+                                                text: "네",
+                                                emoji: true,
+                                            },
+                                            value: "yes_button",
+                                            action_id: "action_yes",
                                         },
-                                        value: "yes_button",
-                                        action_id: "action_yes",
-                                    },
-                                    {
-                                        type: "button",
-                                        text: {
-                                            type: "plain_text",
-                                            text: "아니요",
-                                            emoji: true,
+                                        {
+                                            type: "button",
+                                            text: {
+                                                type: "plain_text",
+                                                text: "아니요",
+                                                emoji: true,
+                                            },
+                                            value: "no_button",
+                                            action_id: "action_no",
                                         },
-                                        value: "no_button",
-                                        action_id: "action_no",
-                                    },
-                                ],
-                            },
-                        ],
-                    });
-                    console.log(result);
+                                    ],
+                                },
+                            ]
+                        });
+                        console.log(result);
+                    }
                 } catch (error) {
                     console.error(error);
                 }
             })();
-        });
+        }
     }
 };
 
-module.exports = sendMsg;
+let sundayMsg = async() => {
+    const userdata = await getuser();
+    
+    if (userdata === undefined)
+        console.log("유저 데이터 가져오기 실패");
+    else {
+        let i;
+
+        for (i = 0; i < userdata.length; i++)
+        {
+            (async () => {
+                try {
+                    if(userdata[i].on_off > 0)
+                    {
+                        const result = await app.client.chat.postMessage({
+                            token, 
+                            channel: userdata[i].user_id,
+                            blocks: [
+                                {
+                                    "type": "section",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "text": "‼️‼️오늘은 보고서 마감일‼️‼️",
+                                        "emoji": true
+                                    }
+                                }
+                            ]
+                        });
+                        console.log(result);
+                    }
+                } catch(error) {
+                    console.error(error);
+                }
+            })();
+        }
+    }
+};
+
+module.exports = {dailyMsg, sundayMsg};
