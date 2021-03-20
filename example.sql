@@ -27,7 +27,7 @@ CREATE TABLE `period` (
   PRIMARY KEY (`key`)
 );
 
---3월 산정기간 데이터 추가
+--period 테이블에 3월 산정기간 데이터 추가
 INSERT INTO period(month, week, start_of_week, end_of_week)
 VALUES
 (3, 1, '2021-03-01', '2021-03-07'),
