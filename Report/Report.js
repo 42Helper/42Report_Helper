@@ -5,7 +5,10 @@ const addReportLog = (user_id) => {
     let connection = mysql.createConnection(root);
     connection.connect();
     connection.query(
-        `INSERT INTO Report(user_id) VALUES ("${user_id}")`,
+        `INSERT INTO report(user_id, created_week) VALUES ("${user_id}",\
+        (SELECT period.week
+            FROM period
+            WHERE now() >= period.start_of_week AND now() <= period.end_of_week));`,
         function (error, results, fields) {
             if (error) {
                 console.log(error);
