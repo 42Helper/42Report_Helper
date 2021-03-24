@@ -21,6 +21,7 @@ let dailyMsg = async () => {
                         const result = await app.client.chat.postMessage({
                             token, 
                             channel: userdata[i].user_id,
+                            text: "오늘 보고서 작성하셨나요?",
                             blocks: [
                                 {
                                     type: "section",

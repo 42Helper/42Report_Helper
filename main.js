@@ -4,38 +4,91 @@ const sendMsg = require("./Utils/sendmsg.js");
 const addReportLog = require("./Report/Report.js");
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
+const moment = require('moment');
 
 const app = new App({ signingSecret, token });
 
-app.action("action_yes", async ({ body, ack, say }) => {
-    await ack();
-    console.log(body.user.id);
-    say("good!!!!");
-    /*
-    const result = await app.client.chat.postMessage({
-        token, //process.env.SLACK_BOT_TOKEN,
-        channel: body.user.id,
-        text: "good!",
-    });
-    */
-    addReportLog(body.user.id);
-});
-
-app.action("action_no", async ({ body, ack }) => {
-    await ack();
-    const result = await app.client.chat.postMessage({
-        token, //process.env.SLACK_BOT_TOKEN,
-        channel: body.user.id,
-        text: "💩",
-        emoji: true,
-    });
-});
-
 const mysql = require("mysql");
 const root = require("./db/dbrootInfo.js");
-const addUser = require("./User/saveDB.js");
 const connection = mysql.createConnection(root);
 connection.connect();
+
+moment.locale('ko');
+
+app.action("action_yes", async ({ body, ack, say, respond }) => {
+    await ack();
+    let m = moment();
+    const result = await respond({ 
+        "replace_original": true,
+        "text": 
+        `${m.format("MM/DD (ddd)")}
+        레포트 작성 기록이 저장되었습니다.
+        `,
+    });
+    // Report 작성 로그 추가
+    await addReportLog(body.user.id);
+    // 이번주 작성 Report 개수 조회
+    connection.query(
+        `SET @week = (SELECT period.week
+            FROM period
+            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
+        SELECT @week;
+        `,
+        function (error, results, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                let weekNum = 'week' + results[1][0]['@week'];
+                connection.query(
+                    `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
+                    function (error, results, fields) {
+                        if (error) {
+                            console.log(error);
+                        }
+                        else {
+                            say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
+                        }
+                    }
+                );
+            }
+        }
+    );
+});
+
+app.action("action_no", async ({ body, ack, say, respond }) => {
+    await ack();
+    const result = await respond({ 
+        "replace_original": true,
+        "text": "💩",
+    });
+    connection.query(
+        `SET @week = (SELECT period.week
+            FROM period
+            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
+        SELECT @week;
+        `,
+        function (error, results, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                let weekNum = 'week' + results[1][0]['@week'];
+                connection.query(
+                    `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
+                    function (error, results, fields) {
+                        if (error) {
+                            console.log(error);
+                        }
+                        else {
+                            say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
+                        }
+                    }
+                );
+            }
+        }
+    );
+});
+
+const addUser = require("./User/saveDB.js");
 
 app.message("!join", async ({ body, say }) => {
     if (body.challenge && body.type == "url_verification") {
@@ -203,7 +256,7 @@ app.message("!help", async ({ body, say }) => {
 (async () => {
     await app.start(process.env.PORT || 3000);
     //schedule.scheduleJob('37 15 * * *', function(){
-    sendMsg.sundayMsg();
+    // sendMsg.sundayMsg();
     sendMsg.dailyMsg();
     //});
 })();
