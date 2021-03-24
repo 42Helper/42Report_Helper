@@ -1,15 +1,17 @@
-const mysql = require("mysql");
 const root = require("../db/dbrootInfo.js");
-
+const mysql = require("mysql");
 const connection = mysql.createConnection(root);
+
 connection.connect();
 
-let getUserData = function () {
+let getPeriod = function () {
     return new Promise(function(resolve, reject) {
         try{
-            connection.query("SELECT user_id, intra_id, on_off FROM user;",
+            connection.query(`SELECT week
+            FROM period
+            WHERE now() >= start_of_week AND now() <= end_of_week;`,
             function(error, results){
-                resolve(results);
+                resolve(results[0].week);
             });
         } catch {
             resolve(null);
@@ -17,4 +19,4 @@ let getUserData = function () {
     });
 };
 
-module.exports = getUserData;
+module.exports = getPeriod;

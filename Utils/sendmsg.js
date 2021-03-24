@@ -1,14 +1,18 @@
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("../db/token.js"); //module.exports = {signingSecret, token}
-const getuser = require("../User/getuserdata.js");
+const getUserData = require("../User/getuserdata.js");
+const getPeriod = require("./getperiod.js");
 
 const app = new App({ signingSecret, token });
 
 let dailyMsg = async () => {
-    const userdata = await getuser();
+    const userdata = await getUserData();
+    const thisweek = await getPeriod();
     
-    if (userdata === undefined)
+    if (userdata === null || userdata === undefined)
         console.log("유저 데이터 가져오기 실패");
+    else if (thisweek === undefined || thisweek === null)
+        console.log("보고서 작성 기간이 아닙니다.");
     else {
         let i;
 
@@ -68,10 +72,13 @@ let dailyMsg = async () => {
 };
 
 let sundayMsg = async() => {
-    const userdata = await getuser();
-    
-    if (userdata === undefined)
+    const userdata = await getUserData();
+    const thisweek = await getPeriod();
+
+    if (userdata === null || userdata === undefined)
         console.log("유저 데이터 가져오기 실패");
+    else if (thisweek === undefined || thisweek === null)
+        console.log("보고서 작성 기간이 아닙니다.");
     else {
         let i;
 
@@ -89,7 +96,7 @@ let sundayMsg = async() => {
                                     "type": "section",
                                     "text": {
                                         "type": "plain_text",
-                                        "text": "‼️‼️오늘은 보고서 마감일‼️‼️",
+                                        "text": `‼️‼️오늘은 ${thisweek}주차 보고서 마감일‼️‼️`,
                                         "emoji": true
                                     }
                                 }

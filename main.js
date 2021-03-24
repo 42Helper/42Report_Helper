@@ -205,6 +205,26 @@ app.message("!push sun", async ({ body, say }) => {
     }
 });
 
+app.message(/^!push/, async ({ message }) => {
+    if (message.text === "!push on")
+    {
+
+    }
+    else if (message.text === "!push off")
+    {
+
+    }
+    else if (message.text === "!push sun")
+    {
+
+    }
+    else if (message.text === "!push state")
+    {
+
+    }
+});
+
+
 app.message("!push state", async ({ body, say }) => {
     if (body.challenge && body.type == "url_verification") {
         res.json({ challenge: body.challenge });
@@ -262,8 +282,10 @@ app.message("!help", async({body, say}) => {
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    //schedule.scheduleJob('37 15 * * *', function(){
-    sendMsg.sundayMsg();
-    sendMsg.dailyMsg();
-    //});
+    schedule.scheduleJob('5 20 * * *', function(){
+        sendMsg.dailyMsg();
+    });
+    schedule.scheduleJob('12 20 * * *', function(){
+        sendMsg.sundayMsg();
+    });
 })();
