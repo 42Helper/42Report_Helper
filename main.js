@@ -282,10 +282,10 @@ app.message("!help", async({body, say}) => {
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    schedule.scheduleJob('5 20 * * *', function(){
+    schedule.scheduleJob('00 21 * * *', function(){
         sendMsg.dailyMsg();
     });
-    schedule.scheduleJob('12 20 * * *', function(){
+    schedule.scheduleJob('00 17 * * 7', function(){
         sendMsg.sundayMsg();
     });
 })();
