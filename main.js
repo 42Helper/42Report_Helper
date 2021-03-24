@@ -108,28 +108,58 @@ app.message("!delete", async ({ body, say }) => {
     }
 });
 
-//!push off / !push sun / !push on
-app.message("!push off", async ({ body, say }) => {
+app.message("!push", async ({ body, say }) => {
     if (body.challenge && body.type == "url_verification") {
         res.json({ challenge: body.challenge });
     }
     try {
         let user_id = body.event.user;
+        let msg = body.event.text.substring(6);
+        let msg_state = [
+            {
+                msg: "off",
+                num: 0,
+                text: "항상 off",
+            },
+            {
+                msg: "on",
+                num: 1,
+                text: "항상 on",
+            },
+            {
+                msg: "sun",
+                num: 2,
+                text: "일요일만 on",
+            },
+            {
+                msg: "state",
+                text: "알림 상태 확인",
+            },
+        ];
+        let value = { num: 404, text: "없는 명령어" };
+        msg_state.forEach((i) => {
+            if (i.msg === msg) value = i;
+        });
 
-        console.log(`알림 off: ${body.event.user}`);
         connection.query(
             `SELECT * FROM user WHERE user_id = "${user_id}"`,
             (error, results, fields) => {
                 if (error) console.error(error);
                 else {
                     if (results[0] != undefined) {
-                        connection.query(
-                            `UPDATE user SET on_off = 0 WHERE user_id = "${user_id}"`,
-                            (error, results, fileds) => {
-                                if (error) console.error(error);
-                                else say(`<@${user_id}> 알림 off 완료!`);
-                            }
-                        );
+                        if (value.msg === "state") {
+                            let on_off = results[0].on_off;
+                            say(`<@${user_id}>의 알림상태: ${msg_state[on_off].text}`);
+                        } else if (value.num != 404) {
+                            connection.query(
+                                `UPDATE user SET on_off = ${value.num} WHERE user_id = "${user_id}"`,
+                                (error, results, fileds) => {
+                                    if (error) console.error(error);
+                                    else say(`<@${user_id}>: ${value.text} 설정완료 :)`);
+                                }
+                            );
+                        }
+                        console.log(`!push ${msg}: ${body.event.user}`);
                     } else {
                         say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
                     }
@@ -141,121 +171,31 @@ app.message("!push off", async ({ body, say }) => {
     }
 });
 
-app.message("!push on", async ({ body, say }) => {
-    if (body.challenge && body.type == "url_verification") {
-        res.json({ challenge: body.challenge });
-    }
-    try {
-        let user_id = body.event.user;
-
-        console.log(`알림 on: ${body.event.user}`);
-        connection.query(
-            `SELECT * FROM user WHERE user_id = "${user_id}"`,
-            (error, results, fields) => {
-                if (error) console.error(error);
-                else {
-                    if (results[0] != undefined) {
-                        connection.query(
-                            `UPDATE user SET on_off = 1 WHERE user_id = "${user_id}"`,
-                            (error, results, fileds) => {
-                                if (error) console.error(error);
-                                else say(`<@${user_id}> 알림 on 완료!`);
-                            }
-                        );
-                    } else {
-                        say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
-                    }
-                }
-            }
-        );
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.message("!push sun", async ({ body, say }) => {
-    if (body.challenge && body.type == "url_verification") {
-        res.json({ challenge: body.challenge });
-    }
-    try {
-        let user_id = body.event.user;
-
-        console.log(`알림 sun: ${body.event.user}`);
-        connection.query(
-            `SELECT * FROM user WHERE user_id = "${user_id}"`,
-            (error, results, fields) => {
-                if (error) console.error(error);
-                else {
-                    if (results[0] != undefined) {
-                        connection.query(
-                            `UPDATE user SET on_off = 2 WHERE user_id = "${user_id}"`,
-                            (error, results, fileds) => {
-                                if (error) console.error(error);
-                                else say(`<@${user_id}> 일요일에만 알림을 보내드립니다 :)`);
-                            }
-                        );
-                    } else {
-                        say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
-                    }
-                }
-            }
-        );
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.message("!push state", async ({ body, say }) => {
-    if (body.challenge && body.type == "url_verification") {
-        res.json({ challenge: body.challenge });
-    }
-    try {
-        let user_id = body.event.user;
-
-        console.log(`알림 상태: ${body.event.user}`);
-        connection.query(
-            `SELECT * FROM user WHERE user_id = "${user_id}"`,
-            (error, results, fields) => {
-                if (error) console.error(error);
-                else {
-                    if (results[0] != undefined) {
-                        let on_off = results[0].on_off;
-                        if (on_off === 0) say(`<@${user_id}>은 알림이 off입니다.`);
-                        else if (on_off === 1) say(`<@${user_id}>은 알림이 on입니다.`);
-                        else if (on_off === 2) say(`<@${user_id}>은 알림이 일요일만 on입니다.`);
-                    } else {
-                        say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
-                    }
-                }
-            }
-        );
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.message("!help", async({body, say}) => {
+app.message("!help", async ({ body, say }) => {
     try {
         await say({
-            "blocks": [
+            blocks: [
                 {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "`!join`\n: 구독 시작\n`!delete`\n: 구독 취소"
-                    }
-                },{
-                    "type": "divider"
-                },{
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 마감일 알림만 받기\n`!push off`\n: 모든 알림 끄기\n`!push state`\n: 알림 상태 확인"
-                    }
-                }
-            ]
-        }); 
-    } catch(error) {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: "`!join`\n: 구독 시작\n`!delete`\n: 구독 취소",
+                    },
+                },
+                {
+                    type: "divider",
+                },
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text:
+                            "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 마감일 알림만 받기\n`!push off`\n: 모든 알림 끄기\n`!push state`\n: 알림 상태 확인",
+                    },
+                },
+            ],
+        });
+    } catch (error) {
         console.error(error);
     }
 });
