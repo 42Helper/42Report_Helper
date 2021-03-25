@@ -261,6 +261,4 @@ app.message("!help", async ({ body, say }) => {
     schedule.scheduleJob(`00 19 * * 7`, function(){
         sendMsg.sundayMsg();
     });
-    sendMsg.dailyMsg();
-    sendMsg.sundayMsg();
 })();
