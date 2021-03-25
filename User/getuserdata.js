@@ -18,9 +18,8 @@ let getUserData = function () {
                         console.log("보고서 작성 기간이 아님")
                     else {
                         const week = `week` + results[0].week;
-                        connection.query(`SELECT user_id, on_off, ${week} 
-                        FROM user
-                        WHERE ${week} < 5;`,
+                        connection.query(`SELECT user_id, ${week} as count, on_off 
+                        FROM user;`,
                         function(error, results){
                             resolve(results);
                         });

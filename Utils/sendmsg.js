@@ -17,7 +17,7 @@ let dailyMsg = async () => {
         {
             (async () => {
                 try {
-                    if (userdata[i].on_off == 1)
+                    if (userdata[i].on_off == 1 && userdata[i].count < 5)
                     {
                         const result = await app.client.chat.postMessage({
                             token, 
@@ -71,6 +71,7 @@ let dailyMsg = async () => {
 
 let sundayMsg = async() => {
     const userdata = await getUserData();
+    const week = await getPeriod();
 
     if (userdata === null || userdata === undefined)
         console.log("유저 데이터 가져오기 실패");
@@ -91,7 +92,7 @@ let sundayMsg = async() => {
                                     "type": "section",
                                     "text": {
                                         "type": "plain_text",
-                                        "text": `‼️‼️오늘은 보고서 마감일‼️‼️`,
+                                        "text": `‼️‼️오늘은 ${week}주차 보고서 마감일‼️‼️`,
                                         "emoji": true
                                     }
                                 }
