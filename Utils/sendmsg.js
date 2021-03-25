@@ -90,7 +90,7 @@ let sundayMsg = async() => {
                                     "type": "section",
                                     "text": {
                                         "type": "plain_text",
-                                        "text": "‼️‼️오늘은 보고서 마감일‼️‼️",
+                                        "text": `‼️‼️오늘은 보고서 마감일‼️‼️`,
                                         "emoji": true
                                     }
                                 }

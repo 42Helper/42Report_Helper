@@ -255,8 +255,10 @@ app.message("!help", async ({ body, say }) => {
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    //schedule.scheduleJob('37 15 * * *', function(){
-    // sendMsg.sundayMsg();
-    sendMsg.dailyMsg();
-    //});
+    schedule.scheduleJob('00 21 * * *', function(){
+        sendMsg.dailyMsg();    
+    });
+    schedule.scheduleJob(`00 19 * * 7`, function(){
+        sendMsg.sundayMsg();
+    });
 })();
