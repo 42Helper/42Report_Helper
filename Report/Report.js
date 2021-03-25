@@ -35,4 +35,4 @@ const addReportLog = (user_id) => {
     });
 };
 
-module.exports = { addReportLog };
+module.exports = addReportLog;
