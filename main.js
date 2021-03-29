@@ -3,11 +3,9 @@ const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
 const addReportLog = require("./Report/Report.js");
 const { App } = require("@slack/bolt");
-//const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
+const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
 const moment = require('moment');
 
-const signingSecret = process.env.signingSecret;
-const token = process.env.token;
 const app = new App({ signingSecret, token });
 
 const mysql = require("mysql");
