@@ -1,8 +1,8 @@
 var root = {
-    host: process.env.DB_ROOT,
-    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: "rebot",
+    database: process.env.DB_DATABASE,
     multipleStatements: true,
 };
 module.exports = root;
