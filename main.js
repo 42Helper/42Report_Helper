@@ -8,10 +8,7 @@ const moment = require('moment');
 
 const app = new App({ signingSecret, token });
 
-const mysql = require("mysql");
-const root = require("./db/dbrootInfo.js");
-const connection = mysql.createConnection(root);
-connection.connect();
+const db = require('./db/dbconnection');
 
 moment.locale('ko');
 
@@ -28,7 +25,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
     // Report 작성 로그 추가
     await addReportLog(body.user.id);
     // 이번주 작성 Report 개수 조회
-    connection.query(
+    db.query(
         `SET @week = (SELECT period.week
             FROM period
             WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
@@ -39,7 +36,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
                 console.log(error);
             } else {
                 let weekNum = 'week' + results[1][0]['@week'];
-                connection.query(
+                db.query(
                     `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
                     function (error, results, fields) {
                         if (error) {
@@ -61,7 +58,7 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
         "replace_original": true,
         "text": "💩",
     });
-    connection.query(
+    db.query(
         `SET @week = (SELECT period.week
             FROM period
             WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
@@ -72,7 +69,7 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
                 console.log(error);
             } else {
                 let weekNum = 'week' + results[1][0]['@week'];
-                connection.query(
+                db.query(
                     `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
                     function (error, results, fields) {
                         if (error) {
@@ -103,7 +100,7 @@ app.message("!join", async ({ body, say }) => {
             let intra_id = usersStore[user_id].name;
 
             //user테이블에 해당 유저 데이터가 있는지 조회 후 처리
-            connection.query(
+            db.query(
                 `SELECT * FROM user WHERE user_id = "${user_id}"`,
                 (error, results, fields) => {
                     if (error) {
@@ -137,13 +134,13 @@ app.message("!delete", async ({ body, say }) => {
         let user_id = body.event.user;
 
         console.log(body.event.user);
-        connection.query(
+        db.query(
             `SELECT * FROM user WHERE user_id = "${user_id}"`,
             (error, results, fields) => {
                 if (error) console.error(error);
                 else {
                     if (results[0] != undefined) {
-                        connection.query(
+                        db.query(
                             `DELETE FROM user WHERE user_id = "${user_id}"`,
                             (error, results, fileds) => {
                                 if (error) console.error(error);
@@ -194,7 +191,7 @@ app.message("!push", async ({ body, say }) => {
             if (i.msg === msg) value = i;
         });
 
-        connection.query(
+        db.query(
             `SELECT * FROM user WHERE user_id = "${user_id}"`,
             (error, results, fields) => {
                 if (error) console.error(error);
@@ -204,7 +201,7 @@ app.message("!push", async ({ body, say }) => {
                             let on_off = results[0].on_off;
                             say(`<@${user_id}>의 알림상태: ${msg_state[on_off].text}`);
                         } else if (value.num != 404) {
-                            connection.query(
+                            db.query(
                                 `UPDATE user SET on_off = ${value.num} WHERE user_id = "${user_id}"`,
                                 (error, results, fileds) => {
                                     if (error) console.error(error);
@@ -255,6 +252,7 @@ app.message("!help", async ({ body, say }) => {
 
 (async () => {
     await app.start(process.env.PORT || 3000);
+    sendMsg.dailyMsg();   
     schedule.scheduleJob('00 21 * * *', function(){
         sendMsg.dailyMsg();    
     });
