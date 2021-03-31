@@ -252,7 +252,6 @@ app.message("!help", async ({ body, say }) => {
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    sendMsg.dailyMsg();   
     schedule.scheduleJob('00 21 * * *', function(){
         sendMsg.dailyMsg();    
     });
