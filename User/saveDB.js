@@ -1,10 +1,7 @@
-const mysql = require("mysql");
-const root = require("../db/dbrootInfo.js");
+const db = require('../db/dbconnection');
 
 const addUser = (user_id, intra_id) => {
-    let connection = mysql.createConnection(root); //root = {host, user, password, database}
-    connection.connect();
-    connection.query(
+    db.query(
         `INSERT INTO user(user_id, intra_id) VALUES ("${user_id}", "${intra_id}")`,
         function (error, results, fields) {
             if (error) {

@@ -1,13 +1,9 @@
-const root = require("../db/dbrootInfo.js");
-const mysql = require("mysql");
-const connection = mysql.createConnection(root);
-
-connection.connect();
+const db = require('../db/dbconnection');
 
 let getPeriod = function () {
     return new Promise(function(resolve, reject) {
         try{
-            connection.query(`SELECT week
+            db.query(`SELECT week
             FROM period
             WHERE now() >= start_of_week AND now() <= end_of_week;`,
             function(error, results){
