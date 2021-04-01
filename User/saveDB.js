@@ -11,7 +11,7 @@ const addUser = (user_id, intra_id) => {
             }
         }
     );
-    connection.end();
+    
 };
 
 module.exports = addUser;
