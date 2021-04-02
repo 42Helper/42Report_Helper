@@ -240,7 +240,10 @@ app.message("!help", async ({ body, say }) => {
                     text: {
                         type: "mrkdwn",
                         text:
-                            "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 마감일 알림만 받기\n`!push off`\n: 모든 알림 끄기\n`!push state`\n: 알림 상태 확인",
+                            "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 일요일에 마감일 알림만 받기\n"
+                            +"`!push off`\n: 모든 알림 끄기\n"
+                            +"`!push state`\n: 알림 상태 확인\n"
+                            +"`!count`\n: 이번주에 작성한 보고서 개수 확인",
                     },
                 },
             ],
@@ -250,12 +253,53 @@ app.message("!help", async ({ body, say }) => {
     }
 });
 
+app.message("!count", async ({ body, say }) => {
+    if (body.challenge && body.type == "url_verification") {
+        res.json({ challenge: body.challenge });
+    }
+    try {
+        let user_id = body.event.user;
+
+        db.query(
+            `SET @week = (SELECT period.week
+                FROM period
+                WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
+            SELECT @week;
+            `,
+            function (error, results, fields) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    if (results[1][0]['@week'] === null)
+                        say("보고서 작성 기간이 아닙니다");
+                    else {
+                        let weekNum = 'week' + results[1][0]['@week'];
+                        db.query(
+                            `SELECT ${weekNum} FROM user WHERE user_id="${user_id}"`,
+                            function (error, results, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                else {
+                                    say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        );
+    } catch (error) {
+        console.error(error);
+    }
+});
+
 (async () => {
     await app.start(process.env.PORT || 3000);
-    schedule.scheduleJob('50 17 * * *', function(){
+    schedule.scheduleJob('00 21 * * *', function(){
         sendMsg.dailyMsg();    
     });
-    schedule.scheduleJob(`55 17 * * *`, function(){
+    schedule.scheduleJob(`00 17 * * 7`, function(){
         sendMsg.sundayMsg();
     });
 })();

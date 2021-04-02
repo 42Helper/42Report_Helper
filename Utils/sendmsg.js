@@ -87,6 +87,7 @@ let sundayMsg = async() => {
                         const result = await app.client.chat.postMessage({
                             token, 
                             channel: userdata[i].user_id,
+                            text: `‼️‼️오늘은 ${week}주차 보고서 마감일‼️‼️`,
                             blocks: [
                                 {
                                     "type": "section",
