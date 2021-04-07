@@ -295,5 +295,5 @@ const isresetWeek = require("./Report/resetcount.js");
     schedule.scheduleJob(`00 17 * * 7`, function () {
         sendMsg.sundayMsg();
     });
-    schedule.scheduleJob(`52 15 7 4 *`, isresetWeek);
+    schedule.scheduleJob(`00 00 * * 0`, isresetWeek);
 })();
