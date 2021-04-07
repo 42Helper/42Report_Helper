@@ -295,7 +295,6 @@ app.message("!count", async ({ body, say }) => {
     schedule.scheduleJob(`00 17 * * 7`, function () {
         sendMsg.sundayMsg();
     });
-    sendMsg.dailyMsg();
     /* let reset = new schedule.RecurrenceRule();
     reset = resetTime;
     schedule.scheduleJob(reset, function () {
