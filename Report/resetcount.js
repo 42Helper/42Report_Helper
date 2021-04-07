@@ -16,7 +16,8 @@ let isresetWeek = () => {
             if (error) {
                 console.log(error);
             } else {
-                console.log("isresetWeek running");
+                console.log(`isresetWeek running ${results[1][0]["@week"]}
+                ${results[1][0]["@week"] === 1}`);
                 if (results[1][0]["@week"] === 1) return true;
                 return false;
             }
