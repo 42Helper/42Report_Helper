@@ -17,7 +17,6 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
     let m = moment();
     const result = await respond({
         replace_original: true,
-<<<<<<< HEAD
         blocks: [
             {
                 type: "divider",
@@ -51,11 +50,6 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
                 type: "divider",
             },
         ],
-=======
-        text: `${m.format("MM/DD (ddd)")}
-        레포트 작성 기록이 저장되었습니다.
-        `,
->>>>>>> edc47893e83cbb82d843c8facde47a4a95636780
     });
     // Report 작성 로그 추가
     await Report.addReportLog(body.user.id);
