@@ -285,7 +285,7 @@ app.message("!count", async ({ body, say }) => {
     }
 });
 
-//const { resetTime, resetcount } = require("./Report/resetcount.js");
+const { isresetWeek, resetcount } = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
@@ -295,9 +295,8 @@ app.message("!count", async ({ body, say }) => {
     schedule.scheduleJob(`00 17 * * 7`, function () {
         sendMsg.sundayMsg();
     });
-    /* let reset = new schedule.RecurrenceRule();
-    reset = resetTime;
-    schedule.scheduleJob(reset, function () {
-        resetcount();
-    }); */
+    schedule.scheduleJob(`05 15 7 4 *`, function () {
+        if (isresetWeek()) resetcount();
+        console.log("스케쥴러 running");
+    });
 })();
