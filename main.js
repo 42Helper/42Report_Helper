@@ -285,7 +285,7 @@ app.message("!count", async ({ body, say }) => {
     }
 });
 
-const { isresetWeek, resetcount } = require("./Report/resetcount.js");
+const isresetWeek = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
@@ -295,7 +295,7 @@ const { isresetWeek, resetcount } = require("./Report/resetcount.js");
     schedule.scheduleJob(`00 17 * * 7`, function () {
         sendMsg.sundayMsg();
     });
-    schedule.scheduleJob(`36 15 7 4 *`, function () {
+    schedule.scheduleJob(`38 15 7 4 *`, function () {
         isresetWeek();
         console.log("스케쥴러 running");
     });
