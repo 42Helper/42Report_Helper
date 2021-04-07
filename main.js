@@ -4,20 +4,20 @@ const sendMsg = require("./Utils/sendmsg.js");
 const Report = require("./Report/Report.js");
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
-const moment = require('moment');
+const moment = require("moment");
 
 const app = new App({ signingSecret, token });
 
-const db = require('./db/dbconnection');
+const db = require("./db/dbconnection");
 
-moment.locale('ko');
+moment.locale("ko");
 
 app.action("action_yes", async ({ body, ack, say, respond }) => {
     await ack();
     let m = moment();
-    const result = await respond({ 
-        "replace_original": true,
-        "blocks": [
+    const result = await respond({
+        replace_original: true,
+        blocks: [
             {
                 type: "divider",
             },
@@ -39,8 +39,8 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
                 accessory: {
                     type: "button",
                     text: {
-                        "type": "plain_text",
-                        "text": "다시 응답하기",
+                        type: "plain_text",
+                        text: "다시 응답하기",
                     },
                     value: "undo_button",
                     action_id: "action_undo",
@@ -49,7 +49,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
             {
                 type: "divider",
             },
-        ]
+        ],
     });
     // Report 작성 로그 추가
     await Report.addReportLog(body.user.id);
@@ -64,14 +64,13 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
             if (error) {
                 console.log(error);
             } else {
-                let weekNum = 'week' + results[1][0]['@week'];
+                let weekNum = "week" + results[1][0]["@week"];
                 db.query(
                     `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
                     function (error, results, fields) {
                         if (error) {
                             console.log(error);
-                        }
-                        else {
+                        } else {
                             say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
                         }
                     }
@@ -83,9 +82,9 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
 
 app.action("action_no", async ({ body, ack, say, respond }) => {
     await ack();
-    const result = await respond({ 
-        "replace_original": true,
-        "blocks": [
+    const result = await respond({
+        replace_original: true,
+        blocks: [
             {
                 type: "section",
                 text: {
@@ -95,8 +94,8 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
                 accessory: {
                     type: "button",
                     text: {
-                        "type": "plain_text",
-                        "text": "다시 응답하기",
+                        type: "plain_text",
+                        text: "다시 응답하기",
                     },
                     value: "undo_button",
                     action_id: "action_undo",
@@ -114,14 +113,13 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
             if (error) {
                 console.log(error);
             } else {
-                let weekNum = 'week' + results[1][0]['@week'];
+                let weekNum = "week" + results[1][0]["@week"];
                 db.query(
                     `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
                     function (error, results, fields) {
                         if (error) {
                             console.log(error);
-                        }
-                        else {
+                        } else {
                             say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
                         }
                     }
@@ -133,9 +131,9 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
 
 app.action("action_undo", async ({ body, ack, say, respond }) => {
     await ack();
-    const result = await respond({ 
-        "replace_original": true,
-        "blocks": [
+    const result = await respond({
+        replace_original: true,
+        blocks: [
             {
                 type: "section",
                 text: {
@@ -224,25 +222,22 @@ app.message("!delete", async ({ body, say }) => {
         let user_id = body.event.user;
 
         console.log(body.event.user);
-        db.query(
-            `SELECT * FROM user WHERE user_id = "${user_id}"`,
-            (error, results, fields) => {
-                if (error) console.error(error);
-                else {
-                    if (results[0] != undefined) {
-                        db.query(
-                            `DELETE FROM user WHERE user_id = "${user_id}"`,
-                            (error, results, fileds) => {
-                                if (error) console.error(error);
-                                else say(`<@${user_id}> 삭제 완료!`);
-                            }
-                        );
-                    } else {
-                        say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
-                    }
+        db.query(`SELECT * FROM user WHERE user_id = "${user_id}"`, (error, results, fields) => {
+            if (error) console.error(error);
+            else {
+                if (results[0] != undefined) {
+                    db.query(
+                        `DELETE FROM user WHERE user_id = "${user_id}"`,
+                        (error, results, fileds) => {
+                            if (error) console.error(error);
+                            else say(`<@${user_id}> 삭제 완료!`);
+                        }
+                    );
+                } else {
+                    say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
                 }
             }
-        );
+        });
     } catch (error) {
         console.error(error);
     }
@@ -281,31 +276,28 @@ app.message("!push", async ({ body, say }) => {
             if (i.msg === msg) value = i;
         });
 
-        db.query(
-            `SELECT * FROM user WHERE user_id = "${user_id}"`,
-            (error, results, fields) => {
-                if (error) console.error(error);
-                else {
-                    if (results[0] != undefined) {
-                        if (value.msg === "state") {
-                            let on_off = results[0].on_off;
-                            say(`<@${user_id}>의 알림상태: ${msg_state[on_off].text}`);
-                        } else if (value.num != 404) {
-                            db.query(
-                                `UPDATE user SET on_off = ${value.num} WHERE user_id = "${user_id}"`,
-                                (error, results, fileds) => {
-                                    if (error) console.error(error);
-                                    else say(`<@${user_id}>: ${value.text} 설정완료 :)`);
-                                }
-                            );
-                        }
-                        console.log(`!push ${msg}: ${body.event.user}`);
-                    } else {
-                        say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
+        db.query(`SELECT * FROM user WHERE user_id = "${user_id}"`, (error, results, fields) => {
+            if (error) console.error(error);
+            else {
+                if (results[0] != undefined) {
+                    if (value.msg === "state") {
+                        let on_off = results[0].on_off;
+                        say(`<@${user_id}>의 알림상태: ${msg_state[on_off].text}`);
+                    } else if (value.num != 404) {
+                        db.query(
+                            `UPDATE user SET on_off = ${value.num} WHERE user_id = "${user_id}"`,
+                            (error, results, fileds) => {
+                                if (error) console.error(error);
+                                else say(`<@${user_id}>: ${value.text} 설정완료 :)`);
+                            }
+                        );
                     }
+                    console.log(`!push ${msg}: ${body.event.user}`);
+                } else {
+                    say(`<@${user_id}>은 등록되지 않은 유저입니다.`);
                 }
             }
-        );
+        });
     } catch (error) {
         console.error(error);
     }
@@ -330,10 +322,10 @@ app.message("!help", async ({ body, say }) => {
                     text: {
                         type: "mrkdwn",
                         text:
-                            "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 일요일에 마감일 알림만 받기\n"
-                            +"`!push off`\n: 모든 알림 끄기\n"
-                            +"`!push state`\n: 알림 상태 확인\n"
-                            +"`!count`\n: 이번주에 작성한 보고서 개수 확인",
+                            "`!push on`\n: 모든 알림 받기 (기본)\n`!push sun`\n: 일요일에 마감일 알림만 받기\n" +
+                            "`!push off`\n: 모든 알림 끄기\n" +
+                            "`!push state`\n: 알림 상태 확인\n" +
+                            "`!count`\n: 이번주에 작성한 보고서 개수 확인",
                     },
                 },
             ],
@@ -360,18 +352,18 @@ app.message("!count", async ({ body, say }) => {
                 if (error) {
                     console.log(error);
                 } else {
-                    if (results[1][0]['@week'] === null)
-                        say("보고서 작성 기간이 아닙니다");
+                    if (results[1][0]["@week"] === null) say("보고서 작성 기간이 아닙니다");
                     else {
-                        let weekNum = 'week' + results[1][0]['@week'];
+                        let weekNum = "week" + results[1][0]["@week"];
                         db.query(
                             `SELECT ${weekNum} FROM user WHERE user_id="${user_id}"`,
                             function (error, results, fields) {
                                 if (error) {
                                     console.log(error);
-                                }
-                                else {
-                                    say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
+                                } else {
+                                    say(
+                                        `이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`
+                                    );
                                 }
                             }
                         );
@@ -384,12 +376,15 @@ app.message("!count", async ({ body, say }) => {
     }
 });
 
+const isresetWeek = require("./Report/resetcount.js");
+
 (async () => {
     await app.start(process.env.PORT || 3000);
-    schedule.scheduleJob('00 21 * * *', function(){
-        sendMsg.dailyMsg();    
+    schedule.scheduleJob("00 21 * * *", function () {
+        sendMsg.dailyMsg();
     });
-    schedule.scheduleJob(`00 17 * * 7`, function(){
+    schedule.scheduleJob(`00 17 * * 7`, function () {
         sendMsg.sundayMsg();
     });
+    schedule.scheduleJob(`00 00 * * 0`, isresetWeek);
 })();
