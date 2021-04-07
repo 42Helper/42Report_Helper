@@ -5,25 +5,6 @@
 2. reset 함수 작성 */
 const db = require("../db/dbconnection");
 
-let isresetWeek = () => {
-    db.query(
-        `SET @week = (SELECT period.week
-            FROM period
-            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
-        SELECT @week;
-		`,
-        function (error, results, fields) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log(`isresetWeek running ${results[1][0]["@week"]}
-                ${results[1][0]["@week"] === 1}`);
-                if (results[1][0]["@week"] === 1) return true;
-                return false;
-            }
-        }
-    );
-};
 const resetcount = () => {
     /* user table week 컬럼 초기화
     report table 초기화 */
@@ -46,4 +27,23 @@ const resetcount = () => {
     //});
 };
 
-module.exports = { isresetWeek, resetcount };
+let isresetWeek = () => {
+    db.query(
+        `SET @week = (SELECT period.week
+            FROM period
+            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
+        SELECT @week;
+		`,
+        function (error, results, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log(`isresetWeek running ${results[1][0]["@week"]}
+                ${results[1][0]["@week"] === 1}`);
+                if (results[1][0]["@week"] === 1) resetcount();
+            }
+        }
+    );
+};
+
+module.exports = isresetWeek;
