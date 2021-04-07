@@ -296,8 +296,9 @@ const { isresetWeek, resetcount } = require("./Report/resetcount.js");
         sendMsg.sundayMsg();
     });
     sendMsg.dailyMsg();
-    schedule.scheduleJob(`22 15 7 4 *`, function () {
-        if (isresetWeek()) {
+    schedule.scheduleJob(`26 15 7 4 *`, function () {
+        console.log(isresetWeek());
+        if (isresetWeek() === true) {
             resetcount();
             console.log("next reset count");
         }

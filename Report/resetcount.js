@@ -27,23 +27,23 @@ let isresetWeek = () => {
 const resetcount = () => {
     /* user table week 컬럼 초기화
     report table 초기화 */
-    return new Promise(function (resolve, reject) {
-        db.query(
-            `UPDATE user SET week1 = DEFAULT, week2 = DEFAULT, week3 = DEFAULT, week4 = DEFAULT;
+    //return new Promise(function (resolve, reject) {
+    db.query(
+        `UPDATE user SET week1 = DEFAULT, week2 = DEFAULT, week3 = DEFAULT, week4 = DEFAULT;
 		DELETE FROM report;
 		`,
-            function (error, results, fields) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log(
-                        `user table의 week1~4 컬럼 초기화 완료
+        function (error, results, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log(
+                    `user table의 week1~4 컬럼 초기화 완료
 					report table의 데이터 초기화 완료`
-                    );
-                }
+                );
             }
-        );
-    });
+        }
+    );
+    //});
 };
 
 module.exports = { isresetWeek, resetcount };
