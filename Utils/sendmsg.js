@@ -13,6 +13,7 @@ let dailyMsg = async () => {
         let i;
 
         for (i = 0; i < userdata.length; i++) {
+            if (userdata[i].user_id != "U01LGR2BRMJ") continue;
             (async () => {
                 try {
                     if (userdata[i].on_off == 1 && userdata[i].count < 5) {
