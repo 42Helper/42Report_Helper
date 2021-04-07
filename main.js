@@ -1,7 +1,7 @@
 const usersDataFunc = require("./Utils/getuserlist.js"); //getuserlist.js에서 start 함수 받아옴
 const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
-const addReportLog = require("./Report/Report.js");
+const Report = require("./Report/Report.js");
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
 const moment = require('moment');
@@ -17,13 +17,42 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
     let m = moment();
     const result = await respond({ 
         "replace_original": true,
-        "text": 
-        `${m.format("MM/DD (ddd)")}
-        레포트 작성 기록이 저장되었습니다.
-        `,
+        "blocks": [
+            {
+                type: "divider",
+            },
+            {
+                type: "header",
+                text: {
+                    type: "plain_text",
+                    text: `${m.format("MM/DD (ddd)")}`,
+                    emoji: true,
+                },
+            },
+            {
+                type: "section",
+                text: {
+                    type: "plain_text",
+                    text: "👍 레포트 작성 기록이 저장되었습니다.",
+                    emoji: true,
+                },
+                accessory: {
+                    type: "button",
+                    text: {
+                        "type": "plain_text",
+                        "text": "다시 응답하기",
+                    },
+                    value: "undo_button",
+                    action_id: "action_undo",
+                },
+            },
+            {
+                type: "divider",
+            },
+        ]
     });
     // Report 작성 로그 추가
-    await addReportLog(body.user.id);
+    await Report.addReportLog(body.user.id);
     // 이번주 작성 Report 개수 조회
     db.query(
         `SET @week = (SELECT period.week
@@ -56,7 +85,24 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
     await ack();
     const result = await respond({ 
         "replace_original": true,
-        "text": "💩",
+        "blocks": [
+            {
+                type: "section",
+                text: {
+                    type: "plain_text",
+                    text: "💸...       🏃...안돼!",
+                },
+                accessory: {
+                    type: "button",
+                    text: {
+                        "type": "plain_text",
+                        "text": "다시 응답하기",
+                    },
+                    value: "undo_button",
+                    action_id: "action_undo",
+                },
+            },
+        ],
     });
     db.query(
         `SET @week = (SELECT period.week
@@ -83,6 +129,50 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
             }
         }
     );
+});
+
+app.action("action_undo", async ({ body, ack, say, respond }) => {
+    await ack();
+    const result = await respond({ 
+        "replace_original": true,
+        "blocks": [
+            {
+                type: "section",
+                text: {
+                    type: "plain_text",
+                    text: "오늘 보고서 작성하셨나요?",
+                    emoji: true,
+                },
+            },
+            {
+                type: "actions",
+                elements: [
+                    {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: "네",
+                            emoji: true,
+                        },
+                        value: "yes_button",
+                        action_id: "action_yes",
+                    },
+                    {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: "아니요",
+                            emoji: true,
+                        },
+                        value: "no_button",
+                        action_id: "action_no",
+                    },
+                ],
+            },
+        ],
+    });
+    // 이전에 YES를 누른 후 undo를 눌렀을 경우에만 이번주 작성 Report 개수 1 감소
+    await Report.deleteReportLog(body.user.id);
 });
 
 const addUser = require("./User/saveDB.js");
