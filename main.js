@@ -84,27 +84,14 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
     // Report 작성 로그 추가
     await Report.addReportLog(body.user.id);
     // 이번주 작성 Report 개수 조회
+    let weekNum = "week" + currWeek;
     db.query(
-        `SET @week = (SELECT period.week
-            FROM period
-            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
-        SELECT @week;
-        `,
+        `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
         function (error, results, fields) {
             if (error) {
                 console.log(error);
             } else {
-                let weekNum = "week" + results[1][0]["@week"];
-                db.query(
-                    `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
-                    function (error, results, fields) {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
-                        }
-                    }
-                );
+                say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
             }
         }
     );
@@ -147,27 +134,14 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
             ]
         });
     }
+    let weekNum = "week" + currWeek;
     db.query(
-        `SET @week = (SELECT period.week
-            FROM period
-            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
-        SELECT @week;
-        `,
+        `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
         function (error, results, fields) {
             if (error) {
                 console.log(error);
             } else {
-                let weekNum = "week" + results[1][0]["@week"];
-                db.query(
-                    `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
-                    function (error, results, fields) {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
-                        }
-                    }
-                );
+                say(`이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`);
             }
         }
     );
