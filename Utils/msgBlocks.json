@@ -1,0 +1,84 @@
+{
+	"yesUndo":
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": "👍 레포트 작성 기록이 저장되었습니다.",
+			"emoji": true
+		},
+		"accessory": {
+			"type": "button",
+			"text": {
+				"type": "plain_text",
+				"text": "다시 응답하기"
+			},
+			"value": "undo_button",
+			"action_id": "action_undo"
+		}
+	},
+
+	"yesOnly":
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": "👍 레포트 작성 기록이 저장되었습니다.",
+			"emoji": true
+		}
+	},
+
+	"noUndo":
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": "💸...       🏃...안돼!"
+		},
+		"accessory": {
+			"type": "button",
+			"text": {
+				"type": "plain_text",
+				"text": "다시 응답하기"
+			},
+			"value": "undo_button",
+			"action_id": "action_undo"
+		}
+	},
+
+	"noOnly":
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": "💸...       🏃...안돼!"
+		}
+	},
+
+	"btnYesNo":
+	{
+		"type": "actions",
+		"elements": [
+			{
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": "네",
+					"emoji": true
+				},
+				"value": "yes_button",
+				"action_id": "action_yes"
+			},
+			{
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": "아니요",
+					"emoji": true
+				},
+				"value": "no_button",
+				"action_id": "action_no"
+			}
+		]
+	}
+}

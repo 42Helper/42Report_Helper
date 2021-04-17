@@ -2,6 +2,7 @@ const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("../db/token.js"); //module.exports = {signingSecret, token}
 const getUserData = require("../User/getuserdata.js");
 const getPeriod = require("./getperiod.js");
+const msgBlocks = require("./msgBlocks.json");
 
 const app = new App({ signingSecret, token });
 
@@ -29,31 +30,7 @@ let dailyMsg = async () => {
                                         emoji: true,
                                     },
                                 },
-                                {
-                                    type: "actions",
-                                    elements: [
-                                        {
-                                            type: "button",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "네",
-                                                emoji: true,
-                                            },
-                                            value: "yes_button",
-                                            action_id: "action_yes",
-                                        },
-                                        {
-                                            type: "button",
-                                            text: {
-                                                type: "plain_text",
-                                                text: "아니요",
-                                                emoji: true,
-                                            },
-                                            value: "no_button",
-                                            action_id: "action_no",
-                                        },
-                                    ],
-                                },
+                                msgBlocks.btnYesNo,
                             ],
                         });
                         console.log(result);
