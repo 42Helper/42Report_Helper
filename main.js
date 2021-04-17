@@ -2,6 +2,8 @@ const usersDataFunc = require("./Utils/getuserlist.js"); //getuserlist.js에서 
 const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
 const Report = require("./Report/Report.js");
+const msgBlocks = require("./Utils/msgBlocks.json");
+
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
 const moment = require("moment");
@@ -15,42 +17,51 @@ moment.locale("ko");
 app.action("action_yes", async ({ body, ack, say, respond }) => {
     await ack();
     let m = moment();
-    const result = await respond({
-        replace_original: true,
-        blocks: [
-            {
-                type: "divider",
-            },
-            {
-                type: "header",
-                text: {
-                    type: "plain_text",
-                    text: `${m.format("MM/DD (ddd)")}`,
-                    emoji: true,
+    let prevDate = new Date(body.message.ts * 1000);
+    let currDate = new Date();
+    if (prevDate.getDate() === currDate.getDate()){
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                {
+                    type: "divider",
                 },
-            },
-            {
-                type: "section",
-                text: {
-                    type: "plain_text",
-                    text: "👍 레포트 작성 기록이 저장되었습니다.",
-                    emoji: true,
-                },
-                accessory: {
-                    type: "button",
+                {
+                    type: "header",
                     text: {
                         type: "plain_text",
-                        text: "다시 응답하기",
+                        text: `${m.format("MM/DD (ddd)")}`,
+                        emoji: true,
                     },
-                    value: "undo_button",
-                    action_id: "action_undo",
                 },
-            },
-            {
-                type: "divider",
-            },
-        ],
-    });
+                msgBlocks.yesUndo,
+                {
+                    type: "divider",
+                },
+            ],
+        });
+    } else {
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                {
+                    type: "divider",
+                },
+                {
+                    type: "header",
+                    text: {
+                        type: "plain_text",
+                        text: `${m.format("MM/DD (ddd)")}`,
+                        emoji: true,
+                    },
+                },
+                msgBlocks.yesOnly,
+                {
+                    type: "divider",
+                },
+            ],
+        });
+    };
     // Report 작성 로그 추가
     await Report.addReportLog(body.user.id);
     // 이번주 작성 Report 개수 조회
@@ -82,27 +93,23 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
 
 app.action("action_no", async ({ body, ack, say, respond }) => {
     await ack();
-    const result = await respond({
-        replace_original: true,
-        blocks: [
-            {
-                type: "section",
-                text: {
-                    type: "plain_text",
-                    text: "💸...       🏃...안돼!",
-                },
-                accessory: {
-                    type: "button",
-                    text: {
-                        type: "plain_text",
-                        text: "다시 응답하기",
-                    },
-                    value: "undo_button",
-                    action_id: "action_undo",
-                },
-            },
-        ],
-    });
+    let prevDate = new Date(body.message.ts * 1000);
+    let currDate = new Date();
+    if (prevDate.getDate() === currDate.getDate()){
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                msgBlocks.noUndo
+            ],
+        });
+    } else {
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                msgBlocks.noOnly
+            ]
+        });
+    }
     db.query(
         `SET @week = (SELECT period.week
             FROM period
@@ -131,44 +138,26 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
 
 app.action("action_undo", async ({ body, ack, say, respond }) => {
     await ack();
-    const result = await respond({
-        replace_original: true,
-        blocks: [
-            {
-                type: "section",
-                text: {
-                    type: "plain_text",
-                    text: "오늘 보고서 작성하셨나요?",
-                    emoji: true,
+    let prevDate = new Date(body.message.ts * 1000);
+    let currDate = new Date();
+    if (prevDate.getDate() === currDate.getDate()){
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                {
+                    type: "section",
+                    text: {
+                        type: "plain_text",
+                        text: "오늘 보고서 작성하셨나요?",
+                        emoji: true,
+                    },
                 },
-            },
-            {
-                type: "actions",
-                elements: [
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            text: "네",
-                            emoji: true,
-                        },
-                        value: "yes_button",
-                        action_id: "action_yes",
-                    },
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            text: "아니요",
-                            emoji: true,
-                        },
-                        value: "no_button",
-                        action_id: "action_no",
-                    },
-                ],
-            },
-        ],
-    });
+                msgBlocks.btnYesNo
+            ],
+        });
+    } else {
+        say("해당 날짜가 지난 후에는 응답을 수정하실 수 없습니다.");
+    }
     // 이전에 YES를 누른 후 undo를 눌렀을 경우에만 이번주 작성 Report 개수 1 감소
     await Report.deleteReportLog(body.user.id);
 });
@@ -336,9 +325,6 @@ app.message("!help", async ({ body, say }) => {
 });
 
 app.message("!count", async ({ body, say }) => {
-    if (body.challenge && body.type == "url_verification") {
-        res.json({ challenge: body.challenge });
-    }
     try {
         let user_id = body.event.user;
 
