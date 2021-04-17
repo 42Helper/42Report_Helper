@@ -3,6 +3,7 @@ const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
 const Report = require("./Report/Report.js");
 const msgBlocks = require("./Utils/msgBlocks.json");
+const getPeriod = require("./Utils/getperiod.js");
 
 const { App } = require("@slack/bolt");
 const { signingSecret, token } = require("./db/token.js"); //module.exports = {signingSecret, token}
@@ -17,9 +18,27 @@ moment.locale("ko");
 app.action("action_yes", async ({ body, ack, say, respond }) => {
     await ack();
     let m = moment();
-    let prevDate = new Date(body.message.ts * 1000);
-    let currDate = new Date();
-    if (prevDate.getDate() === currDate.getDate()){
+    let prevDate = moment(body.message.ts * 1000).format('YYYY-MM-DD HH:mm:ss');
+    let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
+    let prevWeek = await getPeriod(prevDate);
+    let currWeek = await getPeriod(currDate);
+    if (prevWeek !== currWeek)
+    {
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "💥 timeout",
+                        "emoji": true
+                    },
+                },
+            ],
+        });
+        return;
+    } else if (moment(prevDate).isSame(currDate, 'day')){
         const result = await respond({
             replace_original: true,
             blocks: [
@@ -93,9 +112,27 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
 
 app.action("action_no", async ({ body, ack, say, respond }) => {
     await ack();
-    let prevDate = new Date(body.message.ts * 1000);
-    let currDate = new Date();
-    if (prevDate.getDate() === currDate.getDate()){
+    let prevDate = moment(body.message.ts * 1000).format('YYYY-MM-DD HH:mm:ss');
+    let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
+    let prevWeek = await getPeriod(prevDate);
+    let currWeek = await getPeriod(currDate);
+    if (prevWeek !== currWeek)
+    {
+        const result = await respond({
+            replace_original: true,
+            blocks: [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "💥 timeout",
+                        "emoji": true
+                    },
+                },
+            ],
+        });
+        return;
+    } else if (moment(prevDate).isSame(currDate, 'day')){
         const result = await respond({
             replace_original: true,
             blocks: [
@@ -366,6 +403,7 @@ const isresetWeek = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
+    sendMsg.dailyMsg();
     schedule.scheduleJob("00 21 * * *", function () {
         sendMsg.dailyMsg();
     });

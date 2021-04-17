@@ -3,8 +3,11 @@ const { signingSecret, token } = require("../db/token.js"); //module.exports = {
 const getUserData = require("../User/getuserdata.js");
 const getPeriod = require("./getperiod.js");
 const msgBlocks = require("./msgBlocks.json");
+const moment = require("moment");
 
 const app = new App({ signingSecret, token });
+
+moment.locale("ko");
 
 let dailyMsg = async () => {
     const userdata = await getUserData();
@@ -45,7 +48,8 @@ let dailyMsg = async () => {
 
 let sundayMsg = async () => {
     const userdata = await getUserData();
-    const week = await getPeriod();
+    let m = moment().format('YYYY-MM-DD HH:mm:ss');
+    const week = await getPeriod(m);
 
     if (userdata === null || userdata === undefined) console.log("유저 데이터 가져오기 실패");
     else {
