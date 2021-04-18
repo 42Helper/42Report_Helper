@@ -383,7 +383,6 @@ const isresetWeek = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    sendMsg.dailyMsg();
     schedule.scheduleJob("00 21 * * *", function () {
         sendMsg.dailyMsg();
     });
