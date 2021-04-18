@@ -22,7 +22,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
     let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
     let prevWeek = await getPeriod(prevDate);
     let currWeek = await getPeriod(currDate);
-    if ((prevWeek !== currWeek) || (currWeek === null))
+    if (prevWeek !== currWeek)
     {
         const result = await respond({
             replace_original: true,
@@ -103,7 +103,7 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
     let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
     let prevWeek = await getPeriod(prevDate);
     let currWeek = await getPeriod(currDate);
-    if ((prevWeek !== currWeek) || (currWeek === null))
+    if (prevWeek !== currWeek)
     {
         const result = await respond({
             replace_original: true,
@@ -149,14 +149,9 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
 
 app.action("action_undo", async ({ body, ack, say, respond }) => {
     await ack();
-    let prevDate = moment(body.message.ts * 1000).format('YYYY-MM-DD HH:mm:ss');
-    let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
-    let currWeek = await getPeriod(currDate);
-    if (currWeek === null){
-        say("보고서 작성 기간이 아닙니다.");
-        return ;
-    }
-    if (moment(prevDate).isSame(currDate, 'day')){
+    let prevDate = new Date(body.message.ts * 1000);
+    let currDate = new Date();
+    if (prevDate.getDate() === currDate.getDate()){
         const result = await respond({
             replace_original: true,
             blocks: [
@@ -173,10 +168,9 @@ app.action("action_undo", async ({ body, ack, say, respond }) => {
         });
     } else {
         say("해당 날짜가 지난 후에는 응답을 수정하실 수 없습니다.");
-        return ;
     }
     // 이전에 YES를 누른 후 undo를 눌렀을 경우에만 이번주 작성 Report 개수 1 감소
-    await Report.deleteReportLog(body.user.id, currWeek);
+    await Report.deleteReportLog(body.user.id);
 });
 
 const addUser = require("./User/saveDB.js");
