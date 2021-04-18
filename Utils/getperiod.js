@@ -7,7 +7,11 @@ let getPeriod = function (date) {
             FROM period
             WHERE "${date}" >= start_of_week AND "${date}" <= end_of_week;`,
             function(error, results){
-                resolve(results[0].week);
+                if (results[0] !== undefined) {
+                    resolve(results[0].week);
+                } else{
+                    resolve(null);
+                }
             });
         } catch {
             resolve(null);
