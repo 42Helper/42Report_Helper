@@ -82,7 +82,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
         });
     };
     // Report 작성 로그 추가
-    await Report.addReportLog(body.user.id, currWeek);
+    await Report.addReportLog(body.user.id, currDate, currWeek);
     // 이번주 작성 Report 개수 조회
     let weekNum = "week" + currWeek;
     db.query(

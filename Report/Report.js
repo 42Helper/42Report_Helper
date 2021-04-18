@@ -4,7 +4,7 @@ const addReportLog = (user_id, currDate, currWeek) => {
     return new Promise(function(resolve, reject){    
         db.query(
             `INSERT INTO report(user_id, created_date, created_week)
-                    VALUES ("${user_id}", "${currDate}", "${currWeek}");`,
+                    VALUES ("${user_id}", "${currDate}", ${currWeek});`,
             function (error, results, fields) {
                 if (error) {
                     console.log(error);
