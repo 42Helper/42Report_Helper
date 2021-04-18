@@ -82,7 +82,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
         });
     };
     // Report 작성 로그 추가
-    await Report.addReportLog(body.user.id);
+    await Report.addReportLog(body.user.id, currWeek);
     // 이번주 작성 Report 개수 조회
     let weekNum = "week" + currWeek;
     db.query(
@@ -176,7 +176,7 @@ app.action("action_undo", async ({ body, ack, say, respond }) => {
         return ;
     }
     // 이전에 YES를 누른 후 undo를 눌렀을 경우에만 이번주 작성 Report 개수 1 감소
-    await Report.deleteReportLog(body.user.id, currWeek);
+    await Report.deleteReportLog(body.user.id, currDate, currWeek);
 });
 
 const addUser = require("./User/saveDB.js");
@@ -344,36 +344,25 @@ app.message("!help", async ({ body, say }) => {
 app.message("!count", async ({ body, say }) => {
     try {
         let user_id = body.event.user;
-
-        db.query(
-            `SET @week = (SELECT period.week
-                FROM period
-                WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
-            SELECT @week;
-            `,
-            function (error, results, fields) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    if (results[1][0]["@week"] === null) say("보고서 작성 기간이 아닙니다");
-                    else {
-                        let weekNum = "week" + results[1][0]["@week"];
-                        db.query(
-                            `SELECT ${weekNum} FROM user WHERE user_id="${user_id}"`,
-                            function (error, results, fields) {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    say(
-                                        `이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`
-                                    );
-                                }
-                            }
+        let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
+        let currWeek = await getPeriod(currDate);
+        
+        if (currWeek === null) say("보고서 작성 기간이 아닙니다");
+        else {
+            let weekNum = "week" + currWeek;
+            db.query(
+                `SELECT ${weekNum} FROM user WHERE user_id="${user_id}"`,
+                function (error, results, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        say(
+                            `이번주에 ${results[0][weekNum]} 개의 보고서를 작성하셨습니다.`
                         );
                     }
                 }
-            }
-        );
+            );
+        }
     } catch (error) {
         console.error(error);
     }
