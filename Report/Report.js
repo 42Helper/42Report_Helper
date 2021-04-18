@@ -42,7 +42,8 @@ const deleteReportLog = (user_id, currWeek) => {
                     console.log(error);
                 } else {
                     db.query(`DELETE FROM report
-                    WHERE EXISTS( SELECT * from (report where date(created_date)=date(now()) AND user_id="${user_id}"))
+                    WHERE user_id IN (
+                        SELECT temp.user_id from (SELECT user_id FROM report WHERE date(created_date)=date(now()) AND user_id="${user_id}") temp )
                     AND user_id="${user_id}";`,
                         function (error, results, fields) {
                             if (error) {
