@@ -19,9 +19,10 @@ const resetcount = () => {
 
 let isresetWeek = () => {
     db.query(
-        `SET @week = (SELECT period.week
+        `SET @present = DATE_ADD(NOW(), INTERVAL 9 HOUR);
+        SET @week = (SELECT period.week
             FROM period
-            WHERE now() >= period.start_of_week AND now() <= period.end_of_week);
+            WHERE @present >= period.start_of_week AND @present <= period.end_of_week);
         SELECT @week;
 		`,
         function (error, results, fields) {
