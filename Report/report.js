@@ -1,10 +1,10 @@
 const db = require('../db/dbconnection');
 
-const addReportLog = (user_id, currDate, currWeek) => {
+const addReportLog = (user_id, prevDate, currWeek) => {
     return new Promise(function(resolve, reject){    
         db.query(
             `INSERT INTO report(user_id, created_date, created_week)
-                    VALUES ("${user_id}", "${currDate}", ${currWeek});`,
+                    VALUES ("${user_id}", "${prevDate}", ${currWeek});`,
             function (error, results, fields) {
                 if (error) {
                     console.log(error);
@@ -26,12 +26,12 @@ const addReportLog = (user_id, currDate, currWeek) => {
     });
 };
 
-const deleteReportLog = (user_id, currDate, currWeek) => {
+const deleteReportLog = (user_id, prevDate, currWeek) => {
     return new Promise(function(resolve, reject){
         let weekNum = 'week' + currWeek;
         db.query(
             `UPDATE user SET ${weekNum} = ${weekNum} - 1 
-                WHERE EXISTS( SELECT * from report where date(created_date)=date("${currDate}") AND report.user_id="${user_id}")
+                WHERE EXISTS( SELECT * from report where date(created_date)=date("${prevDate}") AND report.user_id="${user_id}")
                 AND user.user_id="${user_id}";`,
             function (error, results, fields) {
                 if (error) {
@@ -39,7 +39,7 @@ const deleteReportLog = (user_id, currDate, currWeek) => {
                 } else {
                     db.query(`DELETE FROM report
                     WHERE user_id IN (
-                        SELECT temp.user_id from (SELECT user_id FROM report WHERE date(created_date)=date("${currDate}") AND user_id="${user_id}") temp )
+                        SELECT temp.user_id from (SELECT user_id FROM report WHERE date(created_date)=date("${prevDate}") AND user_id="${user_id}") temp )
                     AND user_id="${user_id}";`,
                         function (error, results, fields) {
                             if (error) {
