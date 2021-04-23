@@ -163,7 +163,6 @@ app.message("!join", async ({ body, say }) => {
             let usersStore = usersData.usersStore;
             let user_id = body.event.user;
             let intra_id = usersStore[user_id].name;
-
             //user테이블에 해당 유저 데이터가 있는지 조회 후 처리
             db.query(
                 `SELECT * FROM user WHERE user_id = "${user_id}"`,
@@ -175,7 +174,30 @@ app.message("!join", async ({ body, say }) => {
                         if (results[0] === undefined) {
                             //유저 정보가 없을 경우 유저 데이터 삽입
                             addUser(user_id, intra_id);
-                            say(`<@${user_id}> 등록 완료`);
+                            say(
+                                {
+                                    blocks: [
+                                        {
+                                            type: "section",
+                                            text: {
+                                                type: "plain_text",
+                                                text: `<@${intra_id}> 등록 완료!`,
+                                            },
+                                        },
+                                        {
+                                            type: "divider",
+                                        },
+                                        {
+                                            type: "section",
+                                            text: {
+                                                type: "mrkdwn",
+                                                text:
+                                                    "`!help` 명령어로 레봇의 기능을 확인할 수 있습니다.",
+                                            },
+                                        },
+                                    ],
+                                }
+                            );
                             console.log("=================new Person=================");
                         } else {
                             //유저 데이터가 이미 존재할 경우 메세지 응답
@@ -207,7 +229,7 @@ app.message("!delete", async ({ body, say }) => {
                         `DELETE FROM user WHERE user_id = "${user_id}"`,
                         (error, results, fileds) => {
                             if (error) console.error(error);
-                            else say(`<@${user_id}> 삭제 완료!`);
+                            else say(`<@${user_id}> 삭제 완료!\n레봇에서 모든 데이터가 삭제됩니다.`);
                         }
                     );
                 } else {
@@ -305,6 +327,23 @@ app.message("!help", async ({ body, say }) => {
                             "`!count`\n: 이번주에 작성한 보고서 개수 확인",
                     },
                 },
+                {
+                    type: "divider",
+                },
+                {
+                    type: "section",
+                    text: {
+                        "type": "mrkdwn",
+                        "text": "<https://github.com/42Helper/42Report_helper|레봇 github 구경하기>"
+                    },
+                },
+                {
+                    type: "section",
+                    text: {
+                        "type": "plain_text",
+                        "text": "문의: @gkim @hjung @hyejshin"
+                    },
+                },
             ],
         });
     } catch (error) {
@@ -343,7 +382,6 @@ const isresetWeek = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
-    sendMsg.dailyMsg();
     schedule.scheduleJob("00 21 * * *", function () {
         sendMsg.dailyMsg();
     });
