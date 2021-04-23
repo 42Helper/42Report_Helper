@@ -1,7 +1,7 @@
 const usersDataFunc = require("./Utils/getuserlist.js"); //getuserlist.js에서 start 함수 받아옴
 const schedule = require("node-schedule");
 const sendMsg = require("./Utils/sendmsg.js");
-const Report = require("./Report/Report.js");
+const report = require("./Report/report.js");
 const msgBlocks = require("./Utils/msgBlocks.json");
 const getPeriod = require("./Utils/getperiod.js");
 
@@ -17,7 +17,6 @@ moment.locale("ko");
 
 app.action("action_yes", async ({ body, ack, say, respond }) => {
     await ack();
-    let m = moment();
     let prevDate = moment(body.message.ts * 1000).format('YYYY-MM-DD HH:mm:ss');
     let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
     let prevWeek = await getPeriod(prevDate);
@@ -38,27 +37,6 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
             ],
         });
         return;
-    } else if (moment(prevDate).isSame(currDate, 'day')){
-        const result = await respond({
-            replace_original: true,
-            blocks: [
-                {
-                    type: "divider",
-                },
-                {
-                    type: "header",
-                    text: {
-                        type: "plain_text",
-                        text: `${m.format("MM/DD (ddd)")}`,
-                        emoji: true,
-                    },
-                },
-                msgBlocks.yesUndo,
-                {
-                    type: "divider",
-                },
-            ],
-        });
     } else {
         const result = await respond({
             replace_original: true,
@@ -70,11 +48,11 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
                     type: "header",
                     text: {
                         type: "plain_text",
-                        text: `${m.format("MM/DD (ddd)")}`,
+                        text: `${moment(body.message.ts * 1000).format("MM/DD (ddd)")}`,
                         emoji: true,
                     },
                 },
-                msgBlocks.yesOnly,
+                msgBlocks.yesUndo,
                 {
                     type: "divider",
                 },
@@ -82,7 +60,7 @@ app.action("action_yes", async ({ body, ack, say, respond }) => {
         });
     };
     // Report 작성 로그 추가
-    await Report.addReportLog(body.user.id, currDate, currWeek);
+    await report.addReportLog(body.user.id, prevDate, currWeek);
     // 이번주 작성 Report 개수 조회
     let weekNum = "week" + currWeek;
     db.query(
@@ -119,21 +97,14 @@ app.action("action_no", async ({ body, ack, say, respond }) => {
             ],
         });
         return;
-    } else if (moment(prevDate).isSame(currDate, 'day')){
+    } else {
         const result = await respond({
             replace_original: true,
             blocks: [
                 msgBlocks.noUndo
             ],
         });
-    } else {
-        const result = await respond({
-            replace_original: true,
-            blocks: [
-                msgBlocks.noOnly
-            ]
-        });
-    }
+    };
     let weekNum = "week" + currWeek;
     db.query(
         `SELECT ${weekNum} FROM user WHERE user_id = "${body.user.id}"`,
@@ -151,12 +122,15 @@ app.action("action_undo", async ({ body, ack, say, respond }) => {
     await ack();
     let prevDate = moment(body.message.ts * 1000).format('YYYY-MM-DD HH:mm:ss');
     let currDate = moment().format('YYYY-MM-DD HH:mm:ss');
+    let prevWeek = await getPeriod(prevDate);
     let currWeek = await getPeriod(currDate);
     if (currWeek === null){
         say("보고서 작성 기간이 아닙니다.");
         return ;
-    }
-    if (moment(prevDate).isSame(currDate, 'day')){
+    } else if (prevWeek !== currWeek) {
+        say("한 주가 지난 후에는 응답을 수정하실 수 없습니다.");
+        return ;
+    } else {
         const result = await respond({
             replace_original: true,
             blocks: [
@@ -171,12 +145,9 @@ app.action("action_undo", async ({ body, ack, say, respond }) => {
                 msgBlocks.btnYesNo
             ],
         });
-    } else {
-        say("해당 날짜가 지난 후에는 응답을 수정하실 수 없습니다.");
-        return ;
     }
     // 이전에 YES를 누른 후 undo를 눌렀을 경우에만 이번주 작성 Report 개수 1 감소
-    await Report.deleteReportLog(body.user.id, currDate, currWeek);
+    await report.deleteReportLog(body.user.id, prevDate, currWeek);
 });
 
 const addUser = require("./User/saveDB.js");
@@ -372,6 +343,7 @@ const isresetWeek = require("./Report/resetcount.js");
 
 (async () => {
     await app.start(process.env.PORT || 3000);
+    sendMsg.dailyMsg();
     schedule.scheduleJob("00 21 * * *", function () {
         sendMsg.dailyMsg();
     });
