@@ -1,6 +1,6 @@
 CREATE TABLE `user` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL UNIQUE,
   `intra_id` varchar(255) DEFAULT NULL,
   `on_off` int(10) DEFAULT 1,
 	`week1` int(10) DEFAULT 0,
@@ -15,6 +15,7 @@ CREATE TABLE `report` (
   `user_id` varchar(255) DEFAULT NULL,
   `created_date` timestamp,
   `created_week` int(10) DEFAULT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE,
   PRIMARY KEY (`report_id`)
 );
 
